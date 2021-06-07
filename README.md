@@ -12,7 +12,7 @@ This repository contains the source code for the paper "[Bayesian Optimization o
 - Example run
 ```python main.py --objective coco --problem_id bbob-mixint_f001_i01_d10  --n_eval 180```
 
-- There are 7 benchmarks used in the paper. For using synthetic benchmark, please see interactions in [coco](https://github.com/numbbo/coco) suite. For robot pushing benchmark, please see the original description in [Ensemble-Bayesian-Optimization](https://github.com/zi-w/Ensemble-Bayesian-Optimization).
+- There are 7 benchmarks used in the paper. For using synthetic benchmark, please see instructions in [coco](https://github.com/numbbo/coco) suite. For robot pushing benchmark, please see the original description in [Ensemble-Bayesian-Optimization](https://github.com/zi-w/Ensemble-Bayesian-Optimization).
 
 The discrete part of the code is built upon the [source code](https://github.com/QUVA-Lab/COMBO) provided by the COMBO authors. We thank them for their code and have added appropriate licenses. 
 
