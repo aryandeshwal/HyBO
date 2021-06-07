@@ -1,0 +1,12 @@
+gputil
+psutil
+simanneal
+toposort
+torch
+torchvision
+openml
+numpy
+pygame
+box2d-py
+coco: https://github.com/numbbo/coco
+cma: https://github.com/CMA-ES/pycma
