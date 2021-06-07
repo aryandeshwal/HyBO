@@ -1,6 +1,4 @@
-<div align="center">
 # Bayesian Optimization over Hybrid Spaces
-</div>
 
 This repository contains the source code for the paper "[Bayesian Optimization over Hybrid Spaces]()" which will be presented at upcoming Thirty-eighth [ICML'21](https://icml.cc/Conferences/2021/AcceptedPapersInitial) conference. 
 
