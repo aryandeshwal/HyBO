@@ -1,6 +1,6 @@
 # Bayesian Optimization over Hybrid Spaces
 
-This repository contains the source code for the paper "[Bayesian Optimization over Hybrid Spaces]()" which will be presented at upcoming Thirty-eighth [ICML'21](https://icml.cc/Conferences/2021/AcceptedPapersInitial) conference. 
+This repository contains the source code for the paper "[Bayesian Optimization over Hybrid Spaces](https://arxiv.org/abs/2106.04682)" which will be presented at upcoming Thirty-eighth [ICML'21](https://icml.cc/Conferences/2021/AcceptedPapersInitial) conference. 
 
 - By default, data is stored in `../EXPERIMENTS`. Directory can be changed in `config.py`
 - The command-line arguments are described below:
