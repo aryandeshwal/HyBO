@@ -4,10 +4,10 @@ This repository contains the source code for the paper "[Bayesian Optimization o
 
 - By default, data is stored in `../EXPERIMENTS`. Directory can be changed in `config.py`
 - The command-line arguments are described below:
-         --n_eval : The number of evaluations
-         --objective : ['coco'] (example on how to create new objective can be seen in experiments/test_functions/mixed_integer.py)
-     --problem_id : applicable only for 'coco' and 'nn_ml_datasets' domain
-         --path : A path to the directory of the experiment to be continued.(Only need when you want to resume an experiment)
+    - n_eval : The number of evaluations
+    - objective : ['coco'] (example on how to create new objective can be seen in experiments/test_functions/mixed_integer.py)
+    - problem_id : applicable only for 'coco' and 'nn_ml_datasets' domain
+    - path : A path to the directory of the experiment to be continued. (Only required when you want to resume an experiment)
 
 - Example run
 ```python main.py --objective coco --problem_id bbob-mixint_f001_i01_d10  --n_eval 180```
