@@ -1,11 +1,10 @@
 import numpy as np
-
 import torch
 
 from GPmodel.inference.inference import Inference
+from GPmodel.sampler.priors import log_prior_constmean, log_prior_kernelamp, log_prior_noisevar
 from GPmodel.sampler.tool_partition import group_input
 from GPmodel.sampler.tool_slice_sampling import univariate_slice_sampling
-from GPmodel.sampler.priors import log_prior_constmean, log_prior_noisevar, log_prior_kernelamp
 
 
 def slice_hyper(model, input_data, output_data, n_vertices, sorted_partition):
@@ -16,14 +15,16 @@ def slice_hyper(model, input_data, output_data, n_vertices, sorted_partition):
     :param output_data:
     :return:
     """
-    grouped_input_data = group_input(input_data=input_data[:, :model.kernel.num_discrete], sorted_partition=sorted_partition, n_vertices=n_vertices)# need to understand this?
-    grouped_input_data = torch.cat((grouped_input_data, input_data[:, model.kernel.num_discrete:]), dim=1)
+    grouped_input_data = group_input(
+        input_data=input_data[:, : model.kernel.num_discrete], sorted_partition=sorted_partition, n_vertices=n_vertices
+    )  # need to understand this?
+    grouped_input_data = torch.cat((grouped_input_data, input_data[:, model.kernel.num_discrete :]), dim=1)
     inference = Inference(train_data=(grouped_input_data, output_data), model=model)
-    #print("############# [slicing constmean] #############")
+    # print("############# [slicing constmean] #############")
     slice_constmean(inference)
-    #print("############# [slicing kernelamp] #############")
+    # print("############# [slicing kernelamp] #############")
     slice_kernelamp(inference)
-    #print("############# [slicing noise_var] #############")
+    # print("############# [slicing noise_var] #############")
     slice_noisevar(inference)
 
 
@@ -36,6 +37,7 @@ def slice_constmean(inference):
     """
     output_min = torch.min(inference.train_y).item()
     output_max = torch.max(inference.train_y).item()
+
     def logp(constmean):
         """
         :param constmean: numeric(float)
@@ -45,18 +47,18 @@ def slice_constmean(inference):
         if np.isinf(log_prior):
             return log_prior
         inference.model.mean.const_mean.fill_(constmean)
-        #print("data")
-        #print(inference.train_x)
+        # print("data")
+        # print(inference.train_x)
         log_likelihood = float(-inference.negative_log_likelihood(hyper=inference.model.param_to_vec()))
-        #print("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& [here] &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
-        #print("!!!!!!!!!!!!!!! model to vec!!!!!!!!!!!!!!!!!")
+        # print("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& [here] &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
+        # print("!!!!!!!!!!!!!!! model to vec!!!!!!!!!!!!!!!!!")
         # print(inference.model.param_to_vec())
-        #print("log_prior:", log_prior)
-        #print("log_likelihood:", log_likelihood)
+        # print("log_prior:", log_prior)
+        # print("log_likelihood:", log_likelihood)
         return log_prior + log_likelihood
-    
+
     x0 = float(inference.model.mean.const_mean)
-    #print("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& [here] &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
+    # print("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& [here] &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
     x1 = univariate_slice_sampling(logp, x0)
     inference.model.mean.const_mean.fill_(x1)
     return
@@ -96,21 +98,31 @@ def slice_kernelamp(inference):
     :return:
     """
     output_var = torch.var(inference.train_y).item()
-    kernel_min = np.prod([torch.mean(torch.exp(-fourier_freq[-1])).item() / torch.mean(torch.exp(-fourier_freq)).item() for fourier_freq in inference.model.kernel.fourier_freq_list])
-    kernel_max = np.prod([torch.mean(torch.exp(-fourier_freq[0])).item() / torch.mean(torch.exp(-fourier_freq)).item() for fourier_freq in inference.model.kernel.fourier_freq_list])
-        #print(f"kernel_min : {kernel_min}, kernel_max: {kernel_max}")
+    kernel_min = np.prod(
+        [
+            torch.mean(torch.exp(-fourier_freq[-1])).item() / torch.mean(torch.exp(-fourier_freq)).item()
+            for fourier_freq in inference.model.kernel.fourier_freq_list
+        ]
+    )
+    kernel_max = np.prod(
+        [
+            torch.mean(torch.exp(-fourier_freq[0])).item() / torch.mean(torch.exp(-fourier_freq)).item()
+            for fourier_freq in inference.model.kernel.fourier_freq_list
+        ]
+    )
+    # print(f"kernel_min : {kernel_min}, kernel_max: {kernel_max}")
     def logp(log_amp):
-            """
-            :param log_amp: numeric(float)
-            :return: numeric(float)
-            """
-            log_prior = log_prior_kernelamp(log_amp, output_var, kernel_min, kernel_max)
-            #print(f"log_amp prior {log_prior}")
-            if np.isinf(log_prior):
-                return log_prior
-            inference.model.kernel.log_amp.fill_(log_amp)
-            log_likelihood = float(-inference.negative_log_likelihood(hyper=inference.model.param_to_vec()))
-            return log_prior + log_likelihood
+        """
+        :param log_amp: numeric(float)
+        :return: numeric(float)
+        """
+        log_prior = log_prior_kernelamp(log_amp, output_var, kernel_min, kernel_max)
+        # print(f"log_amp prior {log_prior}")
+        if np.isinf(log_prior):
+            return log_prior
+        inference.model.kernel.log_amp.fill_(log_amp)
+        log_likelihood = float(-inference.negative_log_likelihood(hyper=inference.model.param_to_vec()))
+        return log_prior + log_likelihood
 
     x0 = float(inference.model.kernel.log_amp)
     x1 = univariate_slice_sampling(logp, x0)

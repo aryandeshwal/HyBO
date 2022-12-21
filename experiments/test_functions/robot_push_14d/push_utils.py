@@ -10,13 +10,10 @@ class guiWorld:
         self.TARGET_FPS = fps
         self.PPM = 10.0  # pixels per meter
         self.screen = pygame.display.set_mode((self.SCREEN_WIDTH, self.SCREEN_HEIGHT), 0, 32)
-        pygame.display.set_caption('push simulator')
+        pygame.display.set_caption("push simulator")
         self.clock = pygame.time.Clock()
         self.screen_origin = b2Vec2(self.SCREEN_WIDTH / (2 * self.PPM), self.SCREEN_HEIGHT / (self.PPM * 2))
-        self.colors = {
-            b2_staticBody: (255, 255, 255, 255),
-            b2_dynamicBody: (163, 209, 224, 255)
-        }
+        self.colors = {b2_staticBody: (255, 255, 255, 255), b2_dynamicBody: (163, 209, 224, 255)}
 
     def draw(self, bodies, bg_color=(64, 64, 64, 0)):
         def my_draw_polygon(polygon, body, fixture):
@@ -36,8 +33,7 @@ class guiWorld:
             color = self.colors[body.type]
             if body.userData == "hand":
                 color = (174, 136, 218, 0)
-            pygame.draw.circle(self.screen, color, [int(x) for x in
-                                                    position], int(circle.radius * self.PPM))
+            pygame.draw.circle(self.screen, color, [int(x) for x in position], int(circle.radius * self.PPM))
 
         b2PolygonShape.draw = my_draw_polygon
         b2CircleShape.draw = my_draw_circle
@@ -75,7 +71,7 @@ class b2WorldInterface:
         self.do_gui = False
 
     def add_bodies(self, new_bodies):
-        """ add a single b2Body or list of b2Bodies to the world"""
+        """add a single b2Body or list of b2Bodies to the world"""
         if type(new_bodies) == list:
             self.bodies += new_bodies
         else:
@@ -88,28 +84,24 @@ class b2WorldInterface:
 
 
 class end_effector:
-    def __init__(self, b2world_interface, init_pos, base, init_angle, hand_shape='rectangle', hand_size=(0.3, 1)):
+    def __init__(self, b2world_interface, init_pos, base, init_angle, hand_shape="rectangle", hand_size=(0.3, 1)):
         world = b2world_interface.world
         self.hand = world.CreateDynamicBody(position=init_pos, angle=init_angle)
         self.hand_shape = hand_shape
         self.hand_size = hand_size
         # forceunit for circle and rect
-        if hand_shape == 'rectangle':
+        if hand_shape == "rectangle":
             rshape = b2PolygonShape(box=hand_size)
             self.forceunit = 30.0
-        elif hand_shape == 'circle':
+        elif hand_shape == "circle":
             rshape = b2CircleShape(radius=hand_size)
             self.forceunit = 100.0
-        elif hand_shape == 'polygon':
+        elif hand_shape == "polygon":
             rshape = b2PolygonShape(vertices=hand_size)
         else:
             raise Exception("%s is not a correct shape" % hand_shape)
 
-        self.hand.CreateFixture(
-            shape=rshape,
-            density=.1,
-            friction=.1
-        )
+        self.hand.CreateFixture(shape=rshape, density=0.1, friction=0.1)
         self.hand.userData = "hand"
 
         friction_joint = world.CreateFrictionJoint(
@@ -137,13 +129,13 @@ class end_effector:
         self.hand.ApplyForce(force, self.hand.position, wake=True)
 
     def get_state(self, verbose=False):
-        state = list(self.hand.position) + [self.hand.angle] + \
-                list(self.hand.linearVelocity) + [self.hand.angularVelocity]
+        state = (
+            list(self.hand.position) + [self.hand.angle] + list(self.hand.linearVelocity) + [self.hand.angularVelocity]
+        )
         if verbose:
             print_state = ["%.3f" % x for x in state]
             print
-            "position, velocity: (%s), (%s) " % \
-            ((", ").join(print_state[:3]), (", ").join(print_state[3:]))
+            "position, velocity: (%s), (%s) " % ((", ").join(print_state[:3]), (", ").join(print_state[3:]))
 
         return state
 
@@ -152,11 +144,11 @@ def create_body(base, b2world_interface, body_shape, body_size, body_friction, b
     world = b2world_interface.world
 
     link = world.CreateDynamicBody(position=obj_loc)
-    if body_shape == 'rectangle':
+    if body_shape == "rectangle":
         linkshape = b2PolygonShape(box=body_size)
-    elif body_shape == 'circle':
+    elif body_shape == "circle":
         linkshape = b2CircleShape(radius=body_size)
-    elif body_shape == 'polygon':
+    elif body_shape == "polygon":
         linkshape = b2PolygonShape(vertices=body_size)
     else:
         raise Exception("%s is not a correct shape" % body_shape)
@@ -213,9 +205,9 @@ def add_obstacles(b2world_interface, obsverts):
     b2world_interface.add_bodies(obs)
 
 
-def run_simulation(world, body, body2, robot, robot2, xvel, yvel, \
-                   xvel2, yvel2, rtor, rtor2, simulation_steps,
-                   simulation_steps2):
+def run_simulation(
+    world, body, body2, robot, robot2, xvel, yvel, xvel2, yvel2, rtor, rtor2, simulation_steps, simulation_steps2
+):
     # simulating push with fixed direction pointing from robot location to body location
     desired_vel = np.array([xvel, yvel])
     rvel = b2Vec2(desired_vel[0] + np.random.normal(0, 0.01), desired_vel[1] + np.random.normal(0, 0.01))

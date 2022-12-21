@@ -3,7 +3,6 @@ import random
 import time
 
 import numpy as np
-
 from simanneal import Annealer
 from simanneal.anneal import round_figures
 
@@ -11,14 +10,20 @@ from acquisition.acquisition_functions import expected_improvement
 from acquisition.acquisition_marginalization import acquisition_expectation
 from acquisition.acquisition_optimizers.graph_utils import neighbors
 
-
-TMP_FILE_NAME = ''
+TMP_FILE_NAME = ""
 
 
 class GraphSimulatedAnnealing(Annealer):
-
-    def __init__(self, initial_state, inference_samples, partition_samples, edge_mat_samples, n_vertices,
-                 acquisition_func=expected_improvement, reference=None):
+    def __init__(
+        self,
+        initial_state,
+        inference_samples,
+        partition_samples,
+        edge_mat_samples,
+        n_vertices,
+        acquisition_func=expected_improvement,
+        reference=None,
+    ):
         """
 
         :param initial_state: 1D Tensor
@@ -45,8 +50,14 @@ class GraphSimulatedAnnealing(Annealer):
 
     def energy(self):
         # anneal() minimize
-        evaluation = -acquisition_expectation(self.state, self.inference_samples, self.partition_samples,
-                                              self.n_vertices, self.acquisition_func, self.reference).item()
+        evaluation = -acquisition_expectation(
+            self.state,
+            self.inference_samples,
+            self.partition_samples,
+            self.n_vertices,
+            self.acquisition_func,
+            self.reference,
+        ).item()
         self.state_history.append(self.state.clone())
         self.eval_history.append(evaluation)
         return evaluation
@@ -56,8 +67,9 @@ class GraphSimulatedAnnealing(Annealer):
         pass
 
 
-def simulated_annealing(x_init, inference_samples, partition_samples, edge_mat_samples, n_vertices,
-                        acquisition_func, reference=None):
+def simulated_annealing(
+    x_init, inference_samples, partition_samples, edge_mat_samples, n_vertices, acquisition_func, reference=None
+):
     """
     Note that Annealer.anneal() MINIMIZES an objective.
     :param x_init:
@@ -69,10 +81,11 @@ def simulated_annealing(x_init, inference_samples, partition_samples, edge_mat_s
     :param reference:
     :return: 1D Tensor, numeric(float)
     """
-    sa_runner = GraphSimulatedAnnealing(x_init, inference_samples, partition_samples, edge_mat_samples, n_vertices,
-                                        acquisition_func, reference)
+    sa_runner = GraphSimulatedAnnealing(
+        x_init, inference_samples, partition_samples, edge_mat_samples, n_vertices, acquisition_func, reference
+    )
     steps = 500
-    sa_runner.set_schedule({'tmax': 1.0, 'tmin': 0.8 ** steps, 'steps': steps, 'updates': sa_runner.updates})
+    sa_runner.set_schedule({"tmax": 1.0, "tmin": 0.8**steps, "steps": steps, "updates": sa_runner.updates})
     opt_state, opt_eval = sa_runner.anneal()
 
     # Annealer.anneal() MINinimzes an objective but acqusition functions should be MAXimized.

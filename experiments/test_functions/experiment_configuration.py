@@ -1,9 +1,8 @@
 import os
+
 import numpy as np
 import scipy.io as sio
-
 import torch
-
 
 ISING_GRID_H = 4
 ISING_GRID_W = 4
@@ -57,13 +56,11 @@ def sample_mixed_init_points(lbs, ubs, num_discrete, n_points, random_seed=None)
     for _ in range(n_points):
         random_point = []
         for i in range(num_discrete):
-            random_point.append(torch.randint(int(lbs[i]), int(ubs[i]+1), (1,)))
+            random_point.append(torch.randint(int(lbs[i]), int(ubs[i] + 1), (1,)))
         for i in range(num_discrete, len(lbs)):
             random_point.append(torch.FloatTensor(1).uniform_(lbs[i], ubs[i]))
         init_points.append(random_point)
     return torch.tensor(init_points).float()
-
-
 
 
 def sample_init_points(n_vertices, n_points, random_seed=None):
@@ -79,7 +76,9 @@ def sample_init_points(n_vertices, n_points, random_seed=None):
         torch.manual_seed(random_seed)
     init_points = torch.empty(0).long()
     for _ in range(n_points):
-        init_points = torch.cat([init_points, torch.cat([torch.randint(0, int(elm), (1, 1)) for elm in n_vertices], dim=1)], dim=0)
+        init_points = torch.cat(
+            [init_points, torch.cat([torch.randint(0, int(elm), (1, 1)) for elm in n_vertices], dim=1)], dim=0
+        )
     if random_seed is not None:
         torch.set_rng_state(rng_state)
     return init_points
@@ -89,8 +88,14 @@ def generate_ising_interaction(grid_h, grid_w, random_seed=None):
     if random_seed is not None:
         rng_state = torch.get_rng_state()
         torch.manual_seed(random_seed)
-    horizontal_interaction = ((torch.randint(0, 2, (grid_h * (grid_w - 1), )) * 2 - 1).float() * (torch.rand(grid_h * (grid_w - 1)) * (5 - 0.05) + 0.05)).view(grid_h, grid_w-1)
-    vertical_interaction = ((torch.randint(0, 2, ((grid_h - 1) * grid_w, )) * 2 - 1).float() * (torch.rand((grid_h - 1) * grid_w) * (5 - 0.05) + 0.05)).view(grid_h-1, grid_w)
+    horizontal_interaction = (
+        (torch.randint(0, 2, (grid_h * (grid_w - 1),)) * 2 - 1).float()
+        * (torch.rand(grid_h * (grid_w - 1)) * (5 - 0.05) + 0.05)
+    ).view(grid_h, grid_w - 1)
+    vertical_interaction = (
+        (torch.randint(0, 2, ((grid_h - 1) * grid_w,)) * 2 - 1).float()
+        * (torch.rand((grid_h - 1) * grid_w) * (5 - 0.05) + 0.05)
+    ).view(grid_h - 1, grid_w)
     if random_seed is not None:
         torch.set_rng_state(rng_state)
     return horizontal_interaction, vertical_interaction
@@ -116,8 +121,8 @@ def generate_contamination_dynamics(random_seed=None):
 def interaction_sparse2dense(bocs_representation):
     assert bocs_representation.size(0) == bocs_representation.size(1)
     grid_size = int(bocs_representation.size(0) ** 0.5)
-    horizontal_interaction = torch.zeros(grid_size, grid_size-1)
-    vertical_interaction = torch.zeros(grid_size-1, grid_size)
+    horizontal_interaction = torch.zeros(grid_size, grid_size - 1)
+    vertical_interaction = torch.zeros(grid_size - 1, grid_size)
     for i in range(bocs_representation.size(0)):
         r_i = i // grid_size
         c_i = i % grid_size
@@ -135,7 +140,7 @@ def interaction_sparse2dense(bocs_representation):
 
 def interaction_dense2sparse(horizontal_interaction, vertical_interaction):
     grid_size = horizontal_interaction.size(0)
-    bocs_representation = torch.zeros(grid_size ** 2, grid_size ** 2)
+    bocs_representation = torch.zeros(grid_size**2, grid_size**2)
     for i in range(bocs_representation.size(0)):
         r_i = i // grid_size
         c_i = i % grid_size
@@ -151,5 +156,5 @@ def interaction_dense2sparse(horizontal_interaction, vertical_interaction):
     return bocs_representation + bocs_representation.t()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     _convert_random_data_to_matfile()

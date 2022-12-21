@@ -1,15 +1,15 @@
 import numpy as np
-
 import torch
 
 from GPmodel.inference.inference import Inference
+from GPmodel.sampler.priors import log_prior_edgeweight
 from GPmodel.sampler.tool_partition import group_input
 from GPmodel.sampler.tool_slice_sampling import univariate_slice_sampling
-from GPmodel.sampler.priors import log_prior_edgeweight
 
 
-def slice_edgeweight(model, input_data, output_data, n_vertices, log_beta,
-                     sorted_partition, fourier_freq_list, fourier_basis_list, ind):
+def slice_edgeweight(
+    model, input_data, output_data, n_vertices, log_beta, sorted_partition, fourier_freq_list, fourier_basis_list, ind
+):
     """
     Slice sampling the edgeweight(exp('log_beta')) at 'ind' in 'log_beta' vector
     Note that model.kernel members (fourier_freq_list, fourier_basis_list) are updated.
@@ -31,8 +31,10 @@ def slice_edgeweight(model, input_data, output_data, n_vertices, log_beta,
     model.kernel.grouped_log_beta = grouped_log_beta
     model.kernel.fourier_freq_list = fourier_freq_list
     model.kernel.fourier_basis_list = fourier_basis_list
-    grouped_input_data = group_input(input_data=input_data[:, :model.kernel.num_discrete], sorted_partition=sorted_partition, n_vertices=n_vertices)# need to understand this?
-    grouped_input_data = torch.cat((grouped_input_data, input_data[:, model.kernel.num_discrete:]), dim=1)
+    grouped_input_data = group_input(
+        input_data=input_data[:, : model.kernel.num_discrete], sorted_partition=sorted_partition, n_vertices=n_vertices
+    )  # need to understand this?
+    grouped_input_data = torch.cat((grouped_input_data, input_data[:, model.kernel.num_discrete :]), dim=1)
     inference = Inference(train_data=(grouped_input_data, output_data), model=model)
 
     def logp(log_beta_i):
@@ -41,14 +43,14 @@ def slice_edgeweight(model, input_data, output_data, n_vertices, log_beta,
         :param log_beta_i: numeric(float)
         :return: numeric(float)
         """
-        #if (log_beta_i < 0 or log_beta_i > 2):
+        # if (log_beta_i < 0 or log_beta_i > 2):
         #    return -np.inf
         log_prior = log_prior_edgeweight(log_beta_i)
         if np.isinf(log_prior):
             return log_prior
-        model.kernel.grouped_log_beta[updated_subset_ind] =  log_beta_rest + log_beta_i
+        model.kernel.grouped_log_beta[updated_subset_ind] = log_beta_rest + log_beta_i
         log_likelihood = float(-inference.negative_log_likelihood(hyper=model.param_to_vec()))
-        #return log_likelihood
+        # return log_likelihood
         return log_prior + log_likelihood
 
     x0 = float(log_beta[ind])
@@ -58,5 +60,5 @@ def slice_edgeweight(model, input_data, output_data, n_vertices, log_beta,
     return log_beta
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     pass

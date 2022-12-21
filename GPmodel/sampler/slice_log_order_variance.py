@@ -1,15 +1,23 @@
 import numpy as np
-
 import torch
 
 from GPmodel.inference.inference import Inference
+from GPmodel.sampler.priors import log_prior_edgeweight
 from GPmodel.sampler.tool_partition import group_input
 from GPmodel.sampler.tool_slice_sampling import univariate_slice_sampling
-from GPmodel.sampler.priors import log_prior_edgeweight
 
 
-def slice_log_order_variance(model, input_data, output_data, n_vertices, log_order_variance,
-                     sorted_partition, fourier_freq_list, fourier_basis_list, ind):
+def slice_log_order_variance(
+    model,
+    input_data,
+    output_data,
+    n_vertices,
+    log_order_variance,
+    sorted_partition,
+    fourier_freq_list,
+    fourier_basis_list,
+    ind,
+):
     """
     Slice sampling the edgeweight(exp('log_beta')) at 'ind' in 'log_beta' vector
     Note that model.kernel members (fourier_freq_list, fourier_basis_list) are updated.
@@ -24,8 +32,10 @@ def slice_log_order_variance(model, input_data, output_data, n_vertices, log_ord
     :param ind:
     :return:
     """
-    grouped_input_data = group_input(input_data=input_data[:, :model.kernel.num_discrete], sorted_partition=sorted_partition, n_vertices=n_vertices)# need to understand this?
-    grouped_input_data = torch.cat((grouped_input_data, input_data[:, model.kernel.num_discrete:]), dim=1)
+    grouped_input_data = group_input(
+        input_data=input_data[:, : model.kernel.num_discrete], sorted_partition=sorted_partition, n_vertices=n_vertices
+    )  # need to understand this?
+    grouped_input_data = torch.cat((grouped_input_data, input_data[:, model.kernel.num_discrete :]), dim=1)
     inference = Inference(train_data=(grouped_input_data, output_data), model=model)
 
     def logp(log_order_variance_i):
@@ -48,5 +58,5 @@ def slice_log_order_variance(model, input_data, output_data, n_vertices, log_ord
     return log_order_variance
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     pass

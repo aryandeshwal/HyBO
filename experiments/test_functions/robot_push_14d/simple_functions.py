@@ -1,7 +1,6 @@
 import os
 
 import numpy as np
-
 from ebo_core.bo import global_minimize
 from gp_tools.gp import DenseKernelGP
 from gp_tools.representation import DenseL1Kernel
@@ -32,7 +31,7 @@ class SampledGpFunc(object):
         kern = DenseL1Kernel(self.z, self.k)
 
         X = np.random.uniform(x_range[0], x_range[1], (n, dx))
-        kxx = kern(X) + sigma ** 2 * np.eye(X.shape[0])
+        kxx = kern(X) + sigma**2 * np.eye(X.shape[0])
         y = np.random.multivariate_normal(np.zeros(n), kxx).T
 
         self.gp = DenseKernelGP(X, y, sigma=sigma, kern=kern)
@@ -78,16 +77,17 @@ def sample_z(dx):
     return z
 
 
-def save_sampled_gp_funcs(dx, n=50, nfunc=1, isplot=1, dirnm='mytests'):
+def save_sampled_gp_funcs(dx, n=50, nfunc=1, isplot=1, dirnm="mytests"):
     import cPickle as pic
+
     for i in range(nfunc):
         sigma = 0.01
         z = sample_z(dx)
         k = np.array([10] * dx)
-        x_range = np.matlib.repmat([[0.], [1.]], 1, dx)
+        x_range = np.matlib.repmat([[0.0], [1.0]], 1, dx)
         f = SampledGpFunc(x_range, dx, z, k, n, sigma)
-        filenm = os.path.join(dirnm, str(i) + '_' + str(dx) + '_f.pk')
-        pic.dump(f, open(filenm, 'wb'))
+        filenm = os.path.join(dirnm, str(i) + "_" + str(dx) + "_f.pk")
+        pic.dump(f, open(filenm, "wb"))
 
     if isplot:
         plot_f(f)
@@ -95,12 +95,13 @@ def save_sampled_gp_funcs(dx, n=50, nfunc=1, isplot=1, dirnm='mytests'):
     return f
 
 
-def plot_f(f, filenm='test_function.eps'):
+def plot_f(f, filenm="test_function.eps"):
     # only for 2D functions
-    import matplotlib.pyplot as plt
     import matplotlib
-    font = {'size': 20}
-    matplotlib.rc('font', **font)
+    import matplotlib.pyplot as plt
+
+    font = {"size": 20}
+    matplotlib.rc("font", **font)
 
     delta = 0.005
     x = np.arange(0.0, 1.0, delta)
@@ -116,5 +117,5 @@ def plot_f(f, filenm='test_function.eps'):
     plt.xlim([0, 1])
     plt.ylim([0, 1])
     plt.colorbar()
-    plt.scatter(f.argmax[0], f.argmax[1], s=180, color='k', marker='+')
+    plt.scatter(f.argmax[0], f.argmax[1], s=180, color="k", marker="+")
     plt.savefig(filenm)

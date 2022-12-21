@@ -27,8 +27,8 @@ def neighbors(x, partition_samples, edge_mat_samples, n_vertices, uniquely=False
                 nbds = torch.cat([nbds, nbd[added_ind]])
         else:
             nbds = torch.cat([nbds, nbd])
-    #print(x)
-    #print("nbds", nbds.size())
+    # print(x)
+    # print("nbds", nbds.size())
     return nbds
 
 
@@ -40,7 +40,7 @@ def _cartesian_neighbors(grouped_x, edge_mat_list):
     :return: 2d tensor in which each row is 1-hamming distance far from x
     """
     neighbor_list = []
-    #print(len(edge_mat_list))
+    # print(len(edge_mat_list))
     for i in range(len(edge_mat_list)):
         nbd_i_elm = edge_mat_list[i][int(grouped_x[i])].nonzero().squeeze(1)
         nbd_i = grouped_x.repeat((nbd_i_elm.numel(), 1))

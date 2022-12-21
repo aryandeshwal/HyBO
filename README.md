@@ -16,3 +16,9 @@ This repository contains the source code for the paper "[Bayesian Optimization o
 
 The discrete part of the code is built upon the [source code](https://github.com/QUVA-Lab/COMBO) provided by the COMBO authors. We thank them for their code and have added appropriate licenses. 
 
+## Style guide
+
+```shell
+isort . --sp=pyproject.toml
+black . --config=pyproject.toml
+```

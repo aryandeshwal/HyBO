@@ -5,7 +5,6 @@ import scipy.interpolate as si
 
 
 class Trajectory:
-
     def __init__(self):
         pass
 
@@ -67,7 +66,7 @@ class PointBSpline(Trajectory):
 
 
 def simple_rbf(x, point):
-    return (1 - np.exp(-np.sum(((x - point) / 0.25) ** 2)))
+    return 1 - np.exp(-np.sum(((x - point) / 0.25) ** 2))
 
 
 class RoverDomain:
@@ -82,17 +81,20 @@ class RoverDomain:
                 the mins and s_range[1] in R^d are the maxs
     """
 
-    def __init__(self, cost_fn,
-                 start,
-                 goal,
-                 traj,
-                 s_range,
-                 start_miss_cost=None,
-                 goal_miss_cost=None,
-                 force_start=True,
-                 force_goal=True,
-                 only_add_start_goal=True,
-                 rnd_stream=None):
+    def __init__(
+        self,
+        cost_fn,
+        start,
+        goal,
+        traj,
+        s_range,
+        start_miss_cost=None,
+        goal_miss_cost=None,
+        force_start=True,
+        force_goal=True,
+        only_add_start_goal=True,
+        rnd_stream=None,
+    ):
         self.cost_fn = cost_fn
         self.start = start
         self.goal = goal
@@ -111,7 +113,7 @@ class RoverDomain:
             self.goal_miss_cost = simple_rbf
 
         if self.rnd_stream is None:
-            self.rnd_stream = np.random.RandomState(np.random.randint(0, 2 ** 32 - 1))
+            self.rnd_stream = np.random.RandomState(np.random.randint(0, 2**32 - 1))
 
     # return the negative cost which need to be optimized
     def __call__(self, params, n_samples=1000):
@@ -120,9 +122,11 @@ class RoverDomain:
         return -self.estimate_cost(n_samples=n_samples)
 
     def set_params(self, params):
-        self.traj.set_params(params + self.rnd_stream.normal(0, 1e-4, params.shape),
-                             self.start if self.force_start else None,
-                             self.goal if self.force_goal else None)
+        self.traj.set_params(
+            params + self.rnd_stream.normal(0, 1e-4, params.shape),
+            self.start if self.force_start else None,
+            self.goal if self.force_goal else None,
+        )
 
     def estimate_cost(self, n_samples=1000):
         # get points on the trajectory
@@ -159,7 +163,7 @@ class AABoxes:
         lX = self.l.T[None, :, :] <= X[:, :, None]
         hX = self.h.T[None, :, :] > X[:, :, None]
 
-        return (lX.all(axis=1) & hX.all(axis=1))
+        return lX.all(axis=1) & hX.all(axis=1)
 
 
 class NegGeom:
@@ -222,8 +226,9 @@ class GMCost:
         return np.exp(-np.sum(((X[:, :, None] - self.c.T[None, :, :]) / self.s.T[None, :, :]) ** 2, axis=1)).dot(self.w)
 
 
-def plot_2d_rover(roverdomain, ngrid_points=100, ntraj_points=100, colormap='RdBu', draw_colorbar=False):
+def plot_2d_rover(roverdomain, ngrid_points=100, ntraj_points=100, colormap="RdBu", draw_colorbar=False):
     import matplotlib.pyplot as plt
+
     # get a grid of points over the state space
     points = [np.linspace(mi, ma, ngrid_points, endpoint=True) for mi, ma in zip(*roverdomain.s_range)]
     grid_points = np.meshgrid(*points)
@@ -236,19 +241,19 @@ def plot_2d_rover(roverdomain, ngrid_points=100, ntraj_points=100, colormap='RdB
     traj_cost = roverdomain.estimate_cost()
 
     # get points on the current trajectory
-    traj_points = roverdomain.traj.get_points(np.linspace(0., 1.0, ntraj_points, endpoint=True))
+    traj_points = roverdomain.traj.get_points(np.linspace(0.0, 1.0, ntraj_points, endpoint=True))
 
     # set title to be the total cost
-    plt.title('traj cost: {0}'.format(traj_cost))
-    print('traj cost: {0}'.format(traj_cost))
+    plt.title("traj cost: {0}".format(traj_cost))
+    print("traj cost: {0}".format(traj_cost))
     # plot cost function
     cmesh = plt.pcolormesh(grid_points[0], grid_points[1], costs.reshape((ngrid_points, -1)), cmap=colormap)
     if draw_colorbar:
         plt.gcf().colorbar(cmesh)
     # plot traj
-    plt.plot(traj_points[:, 0], traj_points[:, 1], 'g')
+    plt.plot(traj_points[:, 0], traj_points[:, 1], "g")
     # plot start and goal
-    plt.plot([roverdomain.start[0], roverdomain.goal[0]], (roverdomain.start[1], roverdomain.goal[1]), 'ok')
+    plt.plot([roverdomain.start[0], roverdomain.goal[0]], (roverdomain.start[1], roverdomain.goal[1]), "ok")
 
     return cmesh
 
@@ -258,13 +263,33 @@ def generate_verts(rectangles):
     all_faces = []
     vertices = []
     for l, h in zip(rectangles.l, rectangles.h):
-        verts = [[l[0], l[1], l[2]], [l[0], h[1], l[2]], [h[0], h[1], l[2]], [h[0], l[1], l[2]],
-                 [l[0], l[1], h[2]], [l[0], h[1], h[2]], [h[0], h[1], h[2]], [h[0], l[1], h[2]]]
+        verts = [
+            [l[0], l[1], l[2]],
+            [l[0], h[1], l[2]],
+            [h[0], h[1], l[2]],
+            [h[0], l[1], l[2]],
+            [l[0], l[1], h[2]],
+            [l[0], h[1], h[2]],
+            [h[0], h[1], h[2]],
+            [h[0], l[1], h[2]],
+        ]
 
         faces = [[0, 1, 2, 3], [0, 3, 7, 4], [3, 2, 6, 7], [7, 6, 5, 4], [1, 5, 6, 2], [0, 4, 5, 1]]
 
-        vert_ind = [[0, 1, 2], [0, 2, 3], [0, 3, 4], [4, 3, 7], [7, 3, 2], [2, 6, 7],
-                    [7, 5, 4], [7, 6, 5], [2, 5, 6], [2, 1, 5], [0, 1, 4], [1, 4, 5]]
+        vert_ind = [
+            [0, 1, 2],
+            [0, 2, 3],
+            [0, 3, 4],
+            [4, 3, 7],
+            [7, 3, 2],
+            [2, 6, 7],
+            [7, 5, 4],
+            [7, 6, 5],
+            [2, 5, 6],
+            [2, 1, 5],
+            [0, 1, 4],
+            [1, 4, 5],
+        ]
 
         plist = [[verts[vert_ind[ix][iy]] for iy in range(len(vert_ind[0]))] for ix in range(len(vert_ind))]
         faces = [[verts[faces[ix][iy]] for iy in range(len(faces[0]))] for ix in range(len(faces))]
@@ -278,30 +303,33 @@ def generate_verts(rectangles):
 
 def plot_3d_forest_rover(roverdomain, rectangles, ntraj_points=100):
     from matplotlib import pyplot as plt
-    from mpl_toolkits.mplot3d.art3d import Poly3DCollection, Line3DCollection
+    from mpl_toolkits.mplot3d.art3d import Line3DCollection, Poly3DCollection
 
     # get the cost of the current trajectory
     traj_cost = roverdomain.estimate_cost()
 
     # get points on the current trajectory
-    traj_points = roverdomain.traj.get_points(np.linspace(0., 1.0, ntraj_points, endpoint=True))
+    traj_points = roverdomain.traj.get_points(np.linspace(0.0, 1.0, ntraj_points, endpoint=True))
 
     # convert the rectangles into lists of vertices for matplotlib
     poly3d, verts, faces = generate_verts(rectangles)
 
-    ax = plt.gcf().add_subplot(111, projection='3d')
+    ax = plt.gcf().add_subplot(111, projection="3d")
 
     # plot start and goal
-    ax.scatter((roverdomain.start[0], roverdomain.goal[0]),
-               (roverdomain.start[1], roverdomain.goal[1]),
-               (roverdomain.start[2], roverdomain.goal[2]), c='k')
+    ax.scatter(
+        (roverdomain.start[0], roverdomain.goal[0]),
+        (roverdomain.start[1], roverdomain.goal[1]),
+        (roverdomain.start[2], roverdomain.goal[2]),
+        c="k",
+    )
 
     # plot traj
-    seg = (zip(traj_points[:-1, :], traj_points[1:, :]))
-    ax.add_collection3d(Line3DCollection(seg, colors=[(0, 1., 0, 1.)] * len(seg)))
+    seg = zip(traj_points[:-1, :], traj_points[1:, :])
+    ax.add_collection3d(Line3DCollection(seg, colors=[(0, 1.0, 0, 1.0)] * len(seg)))
 
     # plot rectangles
-    ax.add_collection3d(Poly3DCollection(poly3d, facecolors=(0.7, 0.7, 0.7, 1.), linewidth=0.5))
+    ax.add_collection3d(Poly3DCollection(poly3d, facecolors=(0.7, 0.7, 0.7, 1.0), linewidth=0.5))
 
     # set limits of axis to be the same as domain
     s_range = roverdomain.s_range
@@ -312,7 +340,8 @@ def plot_3d_forest_rover(roverdomain, rectangles, ntraj_points=100):
 
 def main():
     import matplotlib.pyplot as plt
-    center = np.array([[1., 1.], [1., 0.0]])
+
+    center = np.array([[1.0, 1.0], [1.0, 0.0]])
     sigma = np.ones(2) * 0.5
     cost_fn = GMCost(center, sigma)
     start = np.zeros(2) + 0.1
@@ -322,15 +351,11 @@ def main():
     p = np.array([[0.1, 0.5], [0.3, 1.3], [0.75, 1.2]])
     traj.set_params(start, goal, p.flatten())
 
-    domain = RoverDomain(cost_fn,
-                         start=start,
-                         goal=goal,
-                         traj=traj,
-                         s_range=np.array([[0., 0.], [2., 2.]]))
+    domain = RoverDomain(cost_fn, start=start, goal=goal, traj=traj, s_range=np.array([[0.0, 0.0], [2.0, 2.0]]))
 
     plt.figure()
     plot_2d_rover(domain)
-    plt.plot(p[:, 0], p[:, 1], '*g')
+    plt.plot(p[:, 0], p[:, 1], "*g")
     plt.show()
 
 

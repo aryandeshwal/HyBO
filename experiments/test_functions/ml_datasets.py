@@ -1,41 +1,74 @@
-import numpy as np
 import timeit
+
+import numpy as np
+import openml
 from sklearn import datasets
 from sklearn.datasets import fetch_olivetti_faces
-import openml
-from sklearn.model_selection import train_test_split, cross_val_score
-from sklearn.preprocessing import MinMaxScaler
-from sklearn.naive_bayes import BernoulliNB, MultinomialNB
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis, QuadraticDiscriminantAnalysis
-from sklearn.svm import LinearSVC, SVC
-from sklearn.linear_model import SGDClassifier, LogisticRegression
+from sklearn.ensemble import (
+    AdaBoostClassifier,
+    ExtraTreesClassifier,
+    GradientBoostingClassifier,
+    RandomForestClassifier,
+)
+from sklearn.linear_model import LogisticRegression, SGDClassifier
 from sklearn.linear_model.passive_aggressive import PassiveAggressiveClassifier
-from sklearn.neural_network import MLPClassifier
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.ensemble import AdaBoostClassifier, ExtraTreesClassifier, GradientBoostingClassifier, RandomForestClassifier
 from sklearn.metrics import accuracy_score
+from sklearn.model_selection import cross_val_score, train_test_split
+from sklearn.naive_bayes import BernoulliNB, MultinomialNB
+from sklearn.neural_network import MLPClassifier
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.svm import SVC, LinearSVC
+from sklearn.tree import DecisionTreeClassifier
 
-datasets_all = ["iris", "digits", "wine", "breast_cancer", "analcatdata_authorship",
-                "blood_transfusion", "monks1", "monks2", "steel_plates_fault", "qsar_biodeg",
-                "phoneme", "diabetes", "hill_valley", "eeg_eye_state", "waveform",
-                "spambase", "australian", "churn", "vehicle", "balance_scale",
-                "kc1", "kc2", "cardiotocography", "wall_robot_navigation", "segment",
-                "artificial_characters", "electricity", "gas_drift", "olivetti", "letter"]
+datasets_all = [
+    "iris",
+    "digits",
+    "wine",
+    "breast_cancer",
+    "analcatdata_authorship",
+    "blood_transfusion",
+    "monks1",
+    "monks2",
+    "steel_plates_fault",
+    "qsar_biodeg",
+    "phoneme",
+    "diabetes",
+    "hill_valley",
+    "eeg_eye_state",
+    "waveform",
+    "spambase",
+    "australian",
+    "churn",
+    "vehicle",
+    "balance_scale",
+    "kc1",
+    "kc2",
+    "cardiotocography",
+    "wall_robot_navigation",
+    "segment",
+    "artificial_characters",
+    "electricity",
+    "gas_drift",
+    "olivetti",
+    "letter",
+]
 
 # cross-validation on training data
 cv_train = 5
 
+
 def gen_train_test_data(dataset="", seed=42):
     print("dataset: {}, seed: {}".format(dataset, seed))
-    if dataset == "blood_transfusion": # 748
+    if dataset == "blood_transfusion":  # 748
         dataset_id = 1464
         ds = openml.datasets.get_dataset(dataset_id)
         (X, y, categorical, names) = ds.get_data(target=ds.default_target_attribute)
-    if dataset == "phoneme": # 5404
+    if dataset == "phoneme":  # 5404
         dataset_id = 1489
         ds = openml.datasets.get_dataset(dataset_id)
         (X, y, categorical, names) = ds.get_data(target=ds.default_target_attribute)
-    if dataset == "kc1": # 2109
+    if dataset == "kc1":  # 2109
         dataset_id = 1067
         ds = openml.datasets.get_dataset(dataset_id)
         (X, y, categorical, names) = ds.get_data(target=ds.default_target_attribute)
@@ -43,11 +76,11 @@ def gen_train_test_data(dataset="", seed=42):
         y_new[y_new == "False"] = "0"
         y_new[y_new == "True"] = "1"
         y = np.array([int(val) for val in y_new])
-    if dataset == "australian": # 4202
+    if dataset == "australian":  # 4202
         dataset_id = 40981
         ds = openml.datasets.get_dataset(dataset_id)
         (X, y, categorical, names) = ds.get_data(target=ds.default_target_attribute)
-    if dataset == "vehicle": # 846
+    if dataset == "vehicle":  # 846
         dataset_id = 54
         ds = openml.datasets.get_dataset(dataset_id)
         (X, y, categorical, names) = ds.get_data(target=ds.default_target_attribute)

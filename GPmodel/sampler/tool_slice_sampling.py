@@ -16,13 +16,13 @@ def univariate_slice_sampling(logp, x0, width=1.0, max_steps_out=10):
         lower = x0 - scaled_width * np.random.rand()
         upper = lower + scaled_width
         llh0 = logp(x0)
-        #print("llh0:", llh0)
+        # print("llh0:", llh0)
         slice_h = np.log(np.random.rand()) + llh0
         llh_record = {}
 
         # Step Out (doubling)
-        #print("Lower and upper")
-        #print(lower)
+        # print("Lower and upper")
+        # print(lower)
         steps_out = 0
         logp_lower = logp(lower)
         logp_upper = logp(upper)
@@ -30,9 +30,9 @@ def univariate_slice_sampling(logp, x0, width=1.0, max_steps_out=10):
         llh_record[float(upper)] = logp_upper
         while (logp_lower > slice_h or logp_upper > slice_h) and (steps_out < max_steps_out):
             if np.random.rand() < 0.5:
-                lower -= (upper - lower)
+                lower -= upper - lower
             else:
-                upper += (upper - lower)
+                upper += upper - lower
             steps_out += 1
             try:
                 logp_lower = llh_record[float(lower)]
@@ -89,5 +89,5 @@ def accept(logp, x0, x1, slice_h, width, lower, upper, llh_record):
     return True
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     pass
