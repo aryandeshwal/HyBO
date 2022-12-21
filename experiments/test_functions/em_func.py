@@ -77,7 +77,7 @@ class EM_func(object):
             adjmat = torch.diag(torch.ones(n_v - 1), -1) + torch.diag(torch.ones(n_v - 1), 1)
             self.adjacency_mat.append(adjmat)
             laplacian = torch.diag(torch.sum(adjmat, dim=0)) - adjmat
-            eigval, eigvec = torch.symeig(laplacian, eigenvectors=True)
+            eigval, eigvec = torch.linalg.eigh(laplacian)
             self.fourier_freq.append(eigval)
             self.fourier_basis.append(eigvec)
 

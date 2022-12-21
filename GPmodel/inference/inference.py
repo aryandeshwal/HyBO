@@ -31,7 +31,7 @@ class Inference(nn.Module):
             chol_jitter = torch.trace(self.gram_mat).item() * jitter_const
             try:
                 # cholesky is lower triangular matrix
-                self.cholesky = torch.cholesky(self.gram_mat + eye_mat * chol_jitter, upper=False)
+                self.cholesky = torch.linalg.cholesky(self.gram_mat + eye_mat * chol_jitter, upper=False)
                 self.jitter = chol_jitter
                 return
             except RuntimeError:
@@ -54,9 +54,9 @@ class Inference(nn.Module):
         k_pred = self.model.kernel(pred_x, diagonal=True)
 
         # cholesky is lower triangular matrix
-        chol_solver = torch.triangular_solve(
-            torch.cat([k_pred_train.t(), self.mean_vec], 1), self.cholesky, upper=False
-        )[0]
+        chol_solver = torch.linalg.solve_triangular(
+            self.cholesky, torch.cat([k_pred_train.t(), self.mean_vec], 1), upper=False
+        )
         chol_solve_k = chol_solver[:, :-1]
         chol_solve_y = chol_solver[:, -1:]
 
@@ -90,7 +90,7 @@ class Inference(nn.Module):
             self.cholesky_update(hyper)
 
         # cholesky is lower triangular matrix
-        mean_vec_sol = torch.triangular_solve(self.mean_vec, self.cholesky, upper=False)[0]
+        mean_vec_sol = torch.linalg.solve_triangular(self.cholesky, self.mean_vec, upper=False)
         nll = (
             0.5 * torch.sum(mean_vec_sol**2)
             + torch.sum(torch.log(torch.diag(self.cholesky)))
@@ -109,7 +109,7 @@ if __name__ == "__main__":
         A_ = A_.matmul(A_.t()) * 0 + 1e-6
         A_ = A_ + torch.diag(torch.ones(n_size_)) * jitter_const_ * torch.trace(A_).item()
         b_ = torch.randn(n_size_, 3)
-        L_ = torch.cholesky(A_, upper=False)
+        L_ = torch.linalg.cholesky(A_, upper=False)
         assert (torch.diag(L_) > 0).all()
         abs_min = torch.min(torch.abs(A_)).item()
         abs_max = torch.max(torch.abs(A_)).item()
@@ -117,4 +117,4 @@ if __name__ == "__main__":
         print("            %.4E~%.4E      %.4E" % (abs_min, abs_max, trace))
         print("     jitter:%.4E" % (trace * jitter_const_))
         print("The smallest eigen value : %.4E\n" % torch.min(torch.diag(L_)).item())
-        torch.triangular_solve(b_, L_, upper=False)
+        torch.linalg.solve_triangular(L_, b_, upper=False)

@@ -9,7 +9,7 @@ from config import experiment_directory
 
 
 def model_data_filenames(exp_dir, objective_name):
-    folder_name = objective_name + "_" + datetime.now().strftime("%Y%m%d-%H:%M:%S:%f")
+    folder_name = objective_name + "_" + datetime.now().strftime("%Y%m%d-%H_%M_%S_%f")
     os.makedirs(os.path.join(exp_dir, folder_name))
     logfile_dir = os.path.join(exp_dir, folder_name, "log")
     os.makedirs(logfile_dir)

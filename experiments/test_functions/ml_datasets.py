@@ -12,7 +12,7 @@ from sklearn.ensemble import (
     RandomForestClassifier,
 )
 from sklearn.linear_model import LogisticRegression, SGDClassifier
-from sklearn.linear_model.passive_aggressive import PassiveAggressiveClassifier
+from sklearn.linear_model import PassiveAggressiveClassifier
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import cross_val_score, train_test_split
 from sklearn.naive_bayes import BernoulliNB, MultinomialNB

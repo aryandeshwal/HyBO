@@ -33,7 +33,7 @@ def next_evaluation(
     parallel=None,
 ):
     id_digit = np.ceil(np.log(np.prod(n_vertices)) / np.log(10))
-    id_unit = torch.from_numpy(np.cumprod(np.concatenate([np.ones(1), n_vertices[:-1]])).astype(np.int))
+    id_unit = torch.from_numpy(np.cumprod(np.concatenate([np.ones(1), n_vertices[:-1]])).astype(np.int64))
     fmt_str = "\t %5.2f (id:%" + str(id_digit) + "d) ==> %5.2f (id:%" + str(id_digit) + "d)"
 
     start_time = time.time()

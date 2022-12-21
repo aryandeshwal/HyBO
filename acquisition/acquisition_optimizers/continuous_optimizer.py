@@ -79,7 +79,7 @@ def cma_es_optimizer(
             batch=True,
         )
         total_time_in_acq += time.time() - temp_time
-        es.tell(xs, Y)  # return the result to the optimizer
+        es.tell(xs, Y.ravel())  # return the result to the optimizer
         if iter > 10:
             break
     best_x = torch.from_numpy(es.best.x).float()

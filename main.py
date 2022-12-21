@@ -118,9 +118,10 @@ def HyBO(objective=None, n_eval=200, path=None, parallel=False, store_data=True,
     else:
         surrogate_model, cfg_data, logfile_dir = load_model_data(path, exp_dir=experiment_directory())
 
-    for _ in range(n_eval):
+    for i in range(n_eval):
         start_time = time.time()
         reference = torch.min(eval_outputs, dim=0)[0].item()
+        print(f"Iteration {i}")
         print("(%s) Sampling" % time.strftime("%H:%M:%S", time.localtime()))
         sample_posterior = posterior_sampling(
             surrogate_model,
@@ -228,6 +229,7 @@ def HyBO(objective=None, n_eval=200, path=None, parallel=False, store_data=True,
 if __name__ == "__main__":
     parser_ = argparse.ArgumentParser(description="Hybrid Bayesian optimization using additive diffusion kernels")
     parser_.add_argument("--n_eval", dest="n_eval", type=int, default=220)
+    parser_.add_argument("--n_expts", dest="n_expts", type=int, default=1)
     parser_.add_argument("--objective", dest="objective")
     parser_.add_argument("--problem_id", dest="problem_id", type=str, default=None)
 
@@ -235,7 +237,7 @@ if __name__ == "__main__":
     kwag_ = vars(args_)
     objective_ = kwag_["objective"]
     print(kwag_)
-    for i in range(25):
+    for i in range(kwag_["n_expts"]):
         if objective_ == "coco":
             random_seed_ = sorted(generate_random_seed_coco())[i]
             kwag_["objective"] = MixedIntegerCOCO(random_seed_, problem_id=kwag_["problem_id"])

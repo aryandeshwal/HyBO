@@ -11,4 +11,4 @@ use_parentheses = true
 force_grid_wrap = 0
 ensure_newline_before_comments = true
 skip_gitignore = true
-py_version = 36
+py_version = 39
